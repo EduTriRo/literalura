@@ -2,6 +2,7 @@ package com.alura.literalura.entity;
 
 import jakarta.persistence.*;
 import java.time.Year;
+import java.util.Objects;
 
 @Entity
 public class Libro {
@@ -90,4 +91,18 @@ public class Libro {
     public String getNombreAutor() {
         return autor != null ? autor.getNombre() : "Autor desconocido";
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Libro libro = (Libro) o;
+        return titulo.equals(libro.titulo) &&
+                idioma.equals(libro.idioma);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(titulo, idioma);
+    }
+
 }

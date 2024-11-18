@@ -2,21 +2,23 @@ package com.alura.literalura.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 public class Consulta {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String usuarioBusqueda;
+    private String terminoBusqueda;
+
     private LocalDateTime fechaConsulta;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "consulta_id") // Establece la relación unidireccional
-    private List<Libro> librosResultados;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "libro_id")
+    private Libro libroRelacionado;
 
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -25,12 +27,12 @@ public class Consulta {
         this.id = id;
     }
 
-    public String getUsuarioBusqueda() {
-        return usuarioBusqueda;
+    public String getTerminoBusqueda() {
+        return terminoBusqueda;
     }
 
-    public void setUsuarioBusqueda(String usuarioBusqueda) {
-        this.usuarioBusqueda = usuarioBusqueda;
+    public void setTerminoBusqueda(String terminoBusqueda) {
+        this.terminoBusqueda = terminoBusqueda;
     }
 
     public LocalDateTime getFechaConsulta() {
@@ -41,11 +43,11 @@ public class Consulta {
         this.fechaConsulta = fechaConsulta;
     }
 
-    public List<Libro> getLibrosResultados() {
-        return librosResultados;
+    public Libro getLibroRelacionado() {
+        return libroRelacionado;
     }
 
-    public void setLibrosResultados(List<Libro> librosResultados) {
-        this.librosResultados = librosResultados;
+    public void setLibroRelacionado(Libro libroRelacionado) {
+        this.libroRelacionado = libroRelacionado;
     }
 }
