@@ -13,9 +13,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Year;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class GutendexService {
@@ -64,6 +64,12 @@ public class GutendexService {
         }
     }
 
+    public List<Autor> buscarAutoresPorRangoDeAnios(int anioInicio, int anioFin) {
+        int anioActual = Year.now().getValue(); // Año actual dinámico
+        return autorRepository.findAutoresByRangoDeAnios(anioInicio, Math.min(anioFin, anioActual));
+    }
+
+
     @Transactional
     public void guardarLibroConAutor(Libro libro) {
         if (libro.getAutor() != null) {
@@ -82,6 +88,20 @@ public class GutendexService {
         } else {
             System.out.println("El libro ya existe en la base de datos.");
         }
+    }
+
+    public List<Libro> obtenerLibrosGuardadosOrdenados() {
+        return libroRepository.findAll()
+                .stream()
+                .sorted((l1, l2) -> l1.getTitulo().compareToIgnoreCase(l2.getTitulo()))
+                .toList();
+    }
+
+    public List<Autor> obtenerAutoresRegistradosOrdenados() {
+        return autorRepository.findAll()
+                .stream()
+                .sorted((a1, a2) -> a1.getNombre().compareToIgnoreCase(a2.getNombre()))
+                .toList();
     }
 
     private Libro convertirBookALibro(GutendexResponse.Book book) {
@@ -120,23 +140,11 @@ public class GutendexService {
         System.out.println("- Idioma: " + libro.getIdioma());
     }
 
-    public List<Libro> obtenerLibrosGuardados() {
-        return libroRepository.findAll();
-    }
-
     public List<Autor> obtenerAutoresRegistrados() {
-        return autorRepository.findAll();
+        return autorRepository.findAll(); // Recuperar todos los autores registrados
     }
 
-    public List<Autor> buscarAutoresPorRangoDeAnios(int anioInicio, int anioFin) {
-        return autorRepository.findAutoresByRangoDeAnios(anioInicio, anioFin);
-    }
-
-    public List<Autor> buscarAutoresConLibros(String nombreAutor) {
-        return autorRepository.findAutoresWithBooksByNombreContainsIgnoreCase(nombreAutor);
-    }
-
-    public void eliminarDuplicados() {
-        libroRepository.eliminarDuplicados();
+    public List<Autor> buscarAutoresConLibros(String nombre) {
+        return autorRepository.findAutoresWithBooksByNombreContainsIgnoreCase(nombre);
     }
 }
