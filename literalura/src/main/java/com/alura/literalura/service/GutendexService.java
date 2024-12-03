@@ -69,7 +69,6 @@ public class GutendexService {
         return autorRepository.findAutoresByRangoDeAnios(anioInicio, Math.min(anioFin, anioActual));
     }
 
-
     @Transactional
     public void guardarLibroConAutor(Libro libro) {
         if (libro.getAutor() != null) {
@@ -144,7 +143,13 @@ public class GutendexService {
         return autorRepository.findAll(); // Recuperar todos los autores registrados
     }
 
-    public List<Autor> buscarAutoresConLibros(String nombre) {
-        return autorRepository.findAutoresWithBooksByNombreContainsIgnoreCase(nombre);
+    @Transactional
+    public List<Autor> buscarAutoresConLibrosPorNombre(String palabraClave) {
+        return autorRepository.findAutoresWithBooksByNombreContainsIgnoreCase(palabraClave);
     }
+
+    public List<Autor> buscarAutoresPorNombre(String palabraClave) {
+        return autorRepository.findByNombreContainsIgnoreCase(palabraClave);
+    }
+
 }

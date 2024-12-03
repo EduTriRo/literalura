@@ -32,7 +32,7 @@ public class ConsoleController {
                 System.out.println("2. Mostrar lista de títulos guardados en la base de datos");
                 System.out.println("3. Mostrar lista de autores registrados");
                 System.out.println("4. Buscar autores vivos entre un rango de años");
-                System.out.println("5. Mostrar libros de un autor específico en la base de datos");
+                System.out.println("5. Mostrar libros de un autor específico en la base de datos (ingrese solo nombre o apellido)");
                 System.out.println("6. Eliminar libros duplicados de la base de datos");
                 System.out.println("0. Salir");
                 System.out.print("Opción: ");
@@ -93,20 +93,34 @@ public class ConsoleController {
                         }
                     }
                     case 5 -> {
-                        System.out.print("Ingrese el nombre del autor: ");
-                        String nombreAutor = scanner.nextLine();
-                        List<Autor> autores = gutendexService.buscarAutoresConLibros(nombreAutor);
+                        System.out.print("Ingrese una sola palabra del nombre o apellido del autor: ");
+                        String entrada = scanner.nextLine().trim();
 
-                        if (autores.isEmpty()) {
-                            System.out.println("No se encontró ningún autor con el nombre: " + nombreAutor);
+                        // Validar que la entrada contenga solo una palabra
+                        if (entrada.contains(" ")) {
+                            System.out.println("Por favor, ingrese solo una palabra (nombre o apellido) para realizar la búsqueda.");
                         } else {
-                            autores.forEach(autor -> {
-                                System.out.println("Libros del autor " + autor.getNombre() + ":");
-                                autor.getLibros().forEach(libro -> System.out.println("- " + libro.getTitulo()));
-                            });
+                            List<Autor> autores = gutendexService.buscarAutoresConLibrosPorNombre(entrada.toLowerCase());
+
+                            if (autores.isEmpty()) {
+                                System.out.println("No se encontraron autores exactos con la palabra: " + entrada);
+                                System.out.println("Buscando coincidencias parciales...");
+                                autores = gutendexService.buscarAutoresPorNombre(entrada.toLowerCase());
+
+                                if (autores.isEmpty()) {
+                                    System.out.println("No se encontraron coincidencias parciales.");
+                                } else {
+                                    System.out.println("Autores sugeridos:");
+                                    autores.forEach(autor -> System.out.println("- " + autor.getNombre()));
+                                }
+                            } else {
+                                autores.forEach(autor -> {
+                                    System.out.println("Libros del autor " + autor.getNombre() + ":");
+                                    autor.getLibros().forEach(libro -> System.out.println("- " + libro.getTitulo()));
+                                });
+                            }
                         }
                     }
-
                     case 6 -> {
                         System.out.println("Eliminando libros duplicados...");
                         libroService.eliminarDuplicados();

@@ -20,9 +20,11 @@ public interface AutorRepository extends JpaRepository<Autor, Long> {
     @Query("SELECT a FROM Autor a JOIN FETCH a.libros WHERE UPPER(a.nombre) LIKE UPPER(CONCAT('%', :nombre, '%')) ORDER BY a.nombre ASC")
     List<Autor> findAutoresWithBooksByNombreContainsIgnoreCase(@Param("nombre") String nombre);
 
+
     @Query("SELECT a FROM Autor a ORDER BY a.nombre ASC")
     List<Autor> findAll(); // Sobrescribiendo el metodo para garantizar orden alfabético
 
     @Query("SELECT a FROM Autor a WHERE (:anioInicio <= COALESCE(a.anioFallecimiento, :anioFin)) AND (:anioFin >= a.anioNacimiento) ORDER BY a.nombre ASC")
     List<Autor> findAutoresByRangoDeAnios(@Param("anioInicio") int anioInicio, @Param("anioFin") int anioFin);
+
 }
