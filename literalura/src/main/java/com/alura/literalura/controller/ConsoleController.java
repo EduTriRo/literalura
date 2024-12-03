@@ -7,6 +7,7 @@ import com.alura.literalura.service.LibroService;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 @Controller
@@ -82,16 +83,23 @@ public class ConsoleController {
                 case 5 -> {
                     System.out.print("Ingrese el nombre del autor: ");
                     String nombreAutor = scanner.nextLine();
-                    List<Libro> libros = gutendexService.obtenerLibrosGuardados().stream()
-                            .filter(libro -> libro.getAutor() != null && libro.getAutor().getNombre().equalsIgnoreCase(nombreAutor))
-                            .toList();
-                    if (libros.isEmpty()) {
-                        System.out.println("No se encontraron libros para el autor especificado.");
+
+                    // Usamos el nuevo método del repositorio para obtener el autor con sus libros
+                    Optional<Autor> autorOpt = gutendexService.obtenerAutorConLibros(nombreAutor);
+
+                    if (autorOpt.isPresent()) {
+                        Autor autor = autorOpt.get();
+                        System.out.println("Libros del autor " + autor.getNombre() + ":");
+                        if (autor.getLibros().isEmpty()) {
+                            System.out.println("- No hay libros registrados para este autor.");
+                        } else {
+                            autor.getLibros().forEach(libro -> System.out.println("- " + libro.getTitulo()));
+                        }
                     } else {
-                        System.out.println("Libros del autor " + nombreAutor + ":");
-                        libros.forEach(libro -> System.out.println("- " + libro.getTitulo()));
+                        System.out.println("No se encontró al autor con el nombre: " + nombreAutor);
                     }
                 }
+
                 case 6 -> {
                     System.out.println("Eliminando libros duplicados...");
                     libroService.eliminarDuplicados(); // Usar el servicio correcto

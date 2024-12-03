@@ -5,17 +5,21 @@ import java.util.List;
 
 @Entity
 public class Autor {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String nombre;
+
     private Integer anioNacimiento;
+
     private Integer anioFallecimiento;
 
     @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Libro> libros;
 
+    // Getters y setters
     public Long getId() {
         return id;
     }
@@ -25,7 +29,7 @@ public class Autor {
     }
 
     public String getNombre() {
-        return nombre != null ? nombre : "Nombre desconocido";
+        return nombre;
     }
 
     public void setNombre(String nombre) {

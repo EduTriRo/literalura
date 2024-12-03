@@ -14,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -88,18 +89,24 @@ public class GutendexService {
     private Libro convertirBookALibro(GutendexResponse.Book book) {
         Libro libro = new Libro();
         libro.setTitulo(book.getTitle());
-        libro.setCantidadDescargas(book.getDownloadCount());
         libro.setIdioma(book.getLanguages().isEmpty() ? "Desconocido" : book.getLanguages().get(0));
-        libro.setSinopsis("Sinopsis no disponible en la API");
+        libro.setSinopsis("sinopsis no disponible en la API");
 
         if (!book.getAuthors().isEmpty()) {
-            Autor autor = convertirPersonAAutor(book.getAuthors().get(0));
+            GutendexResponse.Person authorData = book.getAuthors().get(0);
+            Autor autor = autorRepository.findByNombreIgnoreCase(authorData.getName());
+            if (autor == null) {
+                autor = convertirPersonaAAutor(authorData);
+                autor = autorRepository.save(autor); // Guardar el autor en la base de datos
+            }
             libro.setAutor(autor);
         }
         return libro;
     }
 
-    private Autor convertirPersonAAutor(GutendexResponse.Person person) {
+
+
+    private Autor convertirPersonaAAutor(GutendexResponse.Person person) {
         Autor autor = new Autor();
         autor.setNombre(person.getName());
         autor.setAnioNacimiento(person.getBirthYear());
@@ -126,11 +133,18 @@ public class GutendexService {
     public List<Autor> buscarAutoresPorRangoDeAnios(int anioInicio, int anioFin) {
         return autorRepository.findAll().stream()
                 .filter(autor -> autor.getAnioNacimiento() != null && autor.getAnioNacimiento() >= anioInicio)
-                .filter(autor -> (autor.getAnioFallecimiento() == null || autor.getAnioFallecimiento() > anioFin))
+                .filter(autor -> (autor.getAnioFallecimiento() == null || autor.getAnioFallecimiento() >= anioInicio))
+                .filter(autor -> autor.getAnioNacimiento() <= anioFin)
                 .collect(Collectors.toList());
     }
+
 
     public void eliminarDuplicados() {
         libroRepository.eliminarDuplicados();
     }
+
+    public Optional<Autor> obtenerAutorConLibros(String nombreAutor) {
+        return autorRepository.findByNameWithBooks(nombreAutor);
+    }
+
 }
