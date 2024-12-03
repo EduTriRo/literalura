@@ -2,12 +2,12 @@ package com.alura.literalura.controller;
 
 import com.alura.literalura.entity.Autor;
 import com.alura.literalura.entity.Libro;
+import com.alura.literalura.repository.AutorRepository;
 import com.alura.literalura.service.GutendexService;
 import com.alura.literalura.service.LibroService;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 
 @Controller
@@ -15,10 +15,12 @@ public class ConsoleController {
 
     private final GutendexService gutendexService;
     private final LibroService libroService;
+    private final AutorRepository autorRepository; // Inyectamos AutorRepository
 
-    public ConsoleController(GutendexService gutendexService, LibroService libroService) {
+    public ConsoleController(GutendexService gutendexService, LibroService libroService, AutorRepository autorRepository) {
         this.gutendexService = gutendexService;
         this.libroService = libroService;
+        this.autorRepository = autorRepository; // Asignamos el repositorio inyectado
     }
 
     public void run() {
@@ -26,6 +28,7 @@ public class ConsoleController {
         int opcion;
 
         do {
+            System.out.println("__________-----__________-----__________-----__________-----__________");
             System.out.println("Seleccione una opción:");
             System.out.println("1. Buscar libro por título (API Gutendex)");
             System.out.println("2. Mostrar lista de títulos guardados en la base de datos");
@@ -83,22 +86,19 @@ public class ConsoleController {
                 case 5 -> {
                     System.out.print("Ingrese el nombre del autor: ");
                     String nombreAutor = scanner.nextLine();
+                    List<Autor> autores = gutendexService.buscarAutoresConLibros(nombreAutor);
 
-                    // Usamos el nuevo método del repositorio para obtener el autor con sus libros
-                    Optional<Autor> autorOpt = gutendexService.obtenerAutorConLibros(nombreAutor);
-
-                    if (autorOpt.isPresent()) {
-                        Autor autor = autorOpt.get();
-                        System.out.println("Libros del autor " + autor.getNombre() + ":");
-                        if (autor.getLibros().isEmpty()) {
-                            System.out.println("- No hay libros registrados para este autor.");
-                        } else {
-                            autor.getLibros().forEach(libro -> System.out.println("- " + libro.getTitulo()));
-                        }
+                    if (autores.isEmpty()) {
+                        System.out.println("No se encontró ningún autor con el nombre: " + nombreAutor);
                     } else {
-                        System.out.println("No se encontró al autor con el nombre: " + nombreAutor);
+                        autores.forEach(autor -> {
+                            System.out.println("Libros del autor " + autor.getNombre() + ":");
+                            autor.getLibros().forEach(libro -> System.out.println("- " + libro.getTitulo()));
+                        });
                     }
+                    System.out.println("__________-----__________-----__________-----__________-----__________");
                 }
+
 
                 case 6 -> {
                     System.out.println("Eliminando libros duplicados...");

@@ -15,7 +15,8 @@ public class LibroService {
 
     @Transactional
     public void eliminarDuplicados() {
-        libroRepository.eliminarDuplicados();
-        System.out.println("Duplicados eliminados correctamente.");
+        libroRepository.eliminarDuplicados(); // Método que ejecuta la eliminación
+        System.out.println("__________-----__________-----__________-----__________-----__________");
     }
+
 }

@@ -10,16 +10,17 @@ public class Autor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nombre;
+    private String nombre; // Nombre completo (nombre + apellido)
+    private String apellido; // Apellido
+    private String nombrePersonal; // Nombre sin el apellido
 
     private Integer anioNacimiento;
-
     private Integer anioFallecimiento;
 
     @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Libro> libros;
 
-    // Getters y setters
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -34,6 +35,22 @@ public class Autor {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public String getNombrePersonal() {
+        return nombrePersonal;
+    }
+
+    public void setNombrePersonal(String nombrePersonal) {
+        this.nombrePersonal = nombrePersonal;
     }
 
     public Integer getAnioNacimiento() {

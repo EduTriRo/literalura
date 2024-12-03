@@ -54,7 +54,7 @@ public class GutendexService {
                 GutendexResponse.Book book = response.getBody().getResults().get(0);
                 Libro libro = convertirBookALibro(book);
 
-                guardarLibroConAutor(libro); // Aseguramos la persistencia de autores y libros
+                guardarLibroConAutor(libro);
                 imprimirLibro(libro);
             } else {
                 System.out.println("No se encontraron resultados en la API.");
@@ -66,18 +66,16 @@ public class GutendexService {
 
     @Transactional
     public void guardarLibroConAutor(Libro libro) {
-        // Verificar y guardar el autor si no existe
         if (libro.getAutor() != null) {
             Autor autor = libro.getAutor();
-            Autor autorExistente = autorRepository.findByNombreIgnoreCase(autor.getNombre());
-            if (autorExistente == null) {
-                autorRepository.save(autor); // Guardar el autor si no existe
+            Optional<Autor> autorExistente = autorRepository.findByNombreIgnoreCase(autor.getNombre());
+            if (autorExistente.isEmpty()) {
+                autorRepository.save(autor);
             } else {
-                libro.setAutor(autorExistente); // Reasignar autor existente al libro
+                libro.setAutor(autorExistente.get());
             }
         }
 
-        // Guardar el libro si no existe
         if (!libroRepository.existsByTituloIgnoreCase(libro.getTitulo())) {
             libroRepository.save(libro);
             System.out.println("Libro guardado en la base de datos.");
@@ -94,17 +92,17 @@ public class GutendexService {
 
         if (!book.getAuthors().isEmpty()) {
             GutendexResponse.Person authorData = book.getAuthors().get(0);
-            Autor autor = autorRepository.findByNombreIgnoreCase(authorData.getName());
-            if (autor == null) {
-                autor = convertirPersonaAAutor(authorData);
-                autor = autorRepository.save(autor); // Guardar el autor en la base de datos
+            Optional<Autor> autor = autorRepository.findByNombreIgnoreCase(authorData.getName());
+            if (autor.isEmpty()) {
+                Autor nuevoAutor = convertirPersonaAAutor(authorData);
+                nuevoAutor = autorRepository.save(nuevoAutor);
+                libro.setAutor(nuevoAutor);
+            } else {
+                libro.setAutor(autor.get());
             }
-            libro.setAutor(autor);
         }
         return libro;
     }
-
-
 
     private Autor convertirPersonaAAutor(GutendexResponse.Person person) {
         Autor autor = new Autor();
@@ -131,20 +129,14 @@ public class GutendexService {
     }
 
     public List<Autor> buscarAutoresPorRangoDeAnios(int anioInicio, int anioFin) {
-        return autorRepository.findAll().stream()
-                .filter(autor -> autor.getAnioNacimiento() != null && autor.getAnioNacimiento() >= anioInicio)
-                .filter(autor -> (autor.getAnioFallecimiento() == null || autor.getAnioFallecimiento() >= anioInicio))
-                .filter(autor -> autor.getAnioNacimiento() <= anioFin)
-                .collect(Collectors.toList());
+        return autorRepository.findAutoresByRangoDeAnios(anioInicio, anioFin);
     }
 
+    public List<Autor> buscarAutoresConLibros(String nombreAutor) {
+        return autorRepository.findAutoresWithBooksByNombreContainsIgnoreCase(nombreAutor);
+    }
 
     public void eliminarDuplicados() {
         libroRepository.eliminarDuplicados();
     }
-
-    public Optional<Autor> obtenerAutorConLibros(String nombreAutor) {
-        return autorRepository.findByNameWithBooks(nombreAutor);
-    }
-
 }
